@@ -44,7 +44,8 @@ void setup(){
 
 void loop(){
 //  sendDataSerial('S', Signal);      // send Processing the raw Pulse Sensor data
-  if (QS == true){                    // Quantified Self flag is true when arduino finds a heartbeat
+  if (QS == true){        // Quantified Self flag is true when arduino finds a heartbeat
+     Serial.println("QS true");
      fadeRate = 255;                  // Set 'fadeRate' Variable to 255 to fade LED with pulse
      sendDataSerial('B',BPM);       // send heart rate with a 'B' prefix
  //    sendDataSerial('Q',IBI);       // send time between beats with a 'Q' prefix
@@ -65,7 +66,8 @@ void loop(){
     // main NeoPixel execution
     
     // variables that will change
-    float SpeedFactor;
+    int SpeedFactorBig;
+    int SpeedFactor;
     //float SpeedFactorFloat;
     
     // this won't change
@@ -75,61 +77,78 @@ void loop(){
     unsigned long currentMillis = millis();
     
     // set half to red
-    for (int ledNumber=1; ledNumber<TOTAL_LEDS; ledNumber+=2) {
-      strip.setPixelColor(ledNumber, 155, 0, 0);
-    }
+//    for (int ledNumber=1; ledNumber<TOTAL_LEDS; ledNumber+=2) {
+//      strip.setPixelColor(ledNumber, 155, 0, 0);
+//    }
+int QSCount;
+
+if (QS == true){        // Quantified Self flag is true when arduino finds a heartbeat
+     Serial.println("QS true");
+     fadeRate = 255;                  // Set 'fadeRate' Variable to 255 to fade LED with pulse
+     sendDataSerial('B',BPM);       // send heart rate with a 'B' prefix
+     QSCount++;
+     sendDataSerial('Q',QSCount);       // send time between beats with a 'Q' prefix
+     QS = false;                      // reset the Quantified Self flag for next time    
+  }
     
     
-    float intensity = MaximumBrightness /2.0 * (1.0 + sin(SpeedFactor * i));
+    float intensity;
+    uint32_t stripColor;
+    
+    float SpeedFactorFloat = (SpeedFactor/1000.0);
+      
+      intensity = MaximumBrightness /2.0 * (1.0 + sin(SpeedFactorFloat * i));
 
     if(currentMillis % interval == 0){
+      
+      
            
-      if((BPM > 100) || (BPM < 60)){
+      if((BPM > 150) || (BPM < 60)){
        BPM = 0; 
        SpeedFactor = 0;
       } else {
          // grab BPM and set SpeedFactor
       // inclusive 
-      SpeedFactor = mapf(BPM, 60, 100, .008, .030); //0.030 - max | 0.008 - min  
+      SpeedFactor = mapf(BPM, 60, 150, 9, 30); //0.030 - max | 0.008 - min  
       //float SpeedFactorMini = SpeedFactor / 1000.0;
-      SpeedFactor = constrain(SpeedFactor, 0.008, 0.030); // keep within limits
+      SpeedFactor = constrain(SpeedFactor, 9, 30); // keep within limits
       }
       
-     
       
+      
+     
+      //Serial.println(QSCount);
       Serial.println(BPM);
       Serial.println(SpeedFactor);
+      //Serial.println(SpeedFactorFloat);
+      //Serial.println("this");
+     if( (SpeedFactor >= 9) && (SpeedFactor < 16)  ){
+      stripColor = strip.Color(0, 0, 250);
+     } else if ( (SpeedFactor >= 16) && (SpeedFactor < 23) ){
+       stripColor = strip.Color(125, 0, 125);
+     } else if ( (SpeedFactor >= 23) && (SpeedFactor < 30) ){
+       stripColor = strip.Color(250, 0, 0);
+     } else {
+       stripColor = strip.Color(0, 0, 0); 
+     }
+
+     
      // Serial.println(SpeedFactorMini);
     }
      
     strip.setBrightness(intensity);
-    
-    //int rColor = map(SpeedFactor, 0.008, 0.030, 0, 255); 
+
     
     for (int ledNumber=0; ledNumber<TOTAL_LEDS; ledNumber++) {
-      
-//      if((SpeedFactor >= 0.008) && (SpeedFactor <= 0.019)){
-//        strip.setPixelColor(ledNumber, intensity, 0, 130);
-//      } else if ((SpeedFactor > 0.019) && (SpeedFactor <= 0.030)){
-//        strip.setPixelColor(ledNumber, 130, 0, intensity);
-//      }
 
-    if(SpeedFactor == 0.1){
-      Serial.println(1);
-     strip.setPixelColor(ledNumber, 0, 0, 250); 
-    } else if (SpeedFactor == 0.2){
-     strip.setPixelColor(ledNumber, 125, 0, 125); 
-    } else if (SpeedFactor == 0.3){
-     strip.setPixelColor(ledNumber, 250, 0, 0); 
-    } else {
-     strip.setPixelColor(ledNumber, 0, 0, 0); // set to off by default 
-    }
+    
+    strip.setPixelColor(ledNumber, stripColor);
 
     //strip.setPixelColor(ledNumber, 0, 0, 255);
       
     }
-     // Serial.println("intensity:");
-     // Serial.println(i);
+
+
     strip.show(); 
   
      

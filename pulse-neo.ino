@@ -43,6 +43,7 @@ void setup(){
 }
 
 void loop(){
+  
 //  sendDataSerial('S', Signal);      // send Processing the raw Pulse Sensor data
   if (QS == true){        // Quantified Self flag is true when arduino finds a heartbeat
      Serial.println("QS true");
@@ -68,72 +69,66 @@ void loop(){
     // variables that will change
     int SpeedFactorBig;
     int SpeedFactor;
-    //float SpeedFactorFloat;
+    int maxVal;
+    int minVal;
+    int maxBPM;
+    int minBPM;
+    int med1Val;
+    int med2Val;
     
-    // this won't change
+      // this won't change
     long interval = 2000; // 1000ms = 1s
     
     // check the time
     unsigned long currentMillis = millis();
-    
-    // set half to red
-//    for (int ledNumber=1; ledNumber<TOTAL_LEDS; ledNumber+=2) {
-//      strip.setPixelColor(ledNumber, 155, 0, 0);
-//    }
-int QSCount;
 
 if (QS == true){        // Quantified Self flag is true when arduino finds a heartbeat
-     Serial.println("QS true");
+     //Serial.println("QS true");
      fadeRate = 255;                  // Set 'fadeRate' Variable to 255 to fade LED with pulse
-     sendDataSerial('B',BPM);       // send heart rate with a 'B' prefix
-     QSCount++;
-     sendDataSerial('Q',QSCount);       // send time between beats with a 'Q' prefix
+     //sendDataSerial('B',BPM);       // send heart rate with a 'B' prefix
+     //sendDataSerial('Q',QSCount);       // send time between beats with a 'Q' prefix
      QS = false;                      // reset the Quantified Self flag for next time    
   }
     
     
     float intensity;
     uint32_t stripColor;
-    
     float SpeedFactorFloat = (SpeedFactor/1000.0);
-      
-      intensity = MaximumBrightness /2.0 * (1.0 + sin(SpeedFactorFloat * i));
+    
+    // set intensity  
+    intensity = MaximumBrightness /2.0 * (1.0 + sin(SpeedFactorFloat * i));
 
     if(currentMillis % interval == 0){
-      
-      
-           
-      if((BPM > 150) || (BPM < 60)){
-       BPM = 0; 
-       SpeedFactor = 0;
+      if((BPM > maxBPM) || (BPM < minBPM)){
+        BPM = 0; 
+        SpeedFactor = 0;
       } else {
-         // grab BPM and set SpeedFactor
-      // inclusive 
-      SpeedFactor = mapf(BPM, 60, 150, 1, 25); //0.030 - max | 0.008 - min  
-      //float SpeedFactorMini = SpeedFactor / 1000.0;
-      SpeedFactor = constrain(SpeedFactor, 9, 30); // keep within limits
+        // set SpeedFactor values to map to
+        maxVal = 26;
+        minVal = 5;
+        
+        int stepper = (maxVal - minVal) / 3;
+        
+        med1Val = minVal + stepper;
+        med2Val = maxVal - stepper;
+//        Serial.println(med1Val);
+//        Serial.println(med2Val);
+        Serial.print("BPM");
+        Serial.print(BPM);
+        // grab BPM and set SpeedFactor 
+        SpeedFactor = mapf(BPM, 60, 150, minVal, maxVal); //25 - max | 1 - min  
+        SpeedFactor = constrain(SpeedFactor, minVal, maxVal); // keep within limits
       }
-      
-      
-      
-     
-      //Serial.println(QSCount);
-      Serial.println(BPM);
-      Serial.println(SpeedFactor);
-      //Serial.println(SpeedFactorFloat);
-      //Serial.println("this");
-     if( (SpeedFactor >= 1) && (SpeedFactor < 11)  ){
-      stripColor = strip.Color(0, 0, 250);
-     } else if ( (SpeedFactor >= 11) && (SpeedFactor < 18) ){
-       stripColor = strip.Color(125, 0, 125);
-     } else if ( (SpeedFactor >= 18) && (SpeedFactor < 25) ){
-       stripColor = strip.Color(250, 0, 0);
-     } else {
-       stripColor = strip.Color(0, 0, 0); 
-     }
 
-     
-     // Serial.println(SpeedFactorMini);
+       if( (SpeedFactor >= minVal) && (SpeedFactor < med1Val)  ){
+        stripColor = strip.Color(0, 0, 250); // color ring blue
+       } else if ( (SpeedFactor >= med1Val) && (SpeedFactor < med2Val) ){
+         stripColor = strip.Color(125, 0, 125); // color ring purple
+       } else if ( (SpeedFactor >= med2Val) && (SpeedFactor < maxVal) ){
+         stripColor = strip.Color(250, 0, 0); // color ring red
+       } else {
+         stripColor = strip.Color(0, 0, 0); 
+       }
     }
      
     strip.setBrightness(intensity);

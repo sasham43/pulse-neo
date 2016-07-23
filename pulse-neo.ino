@@ -109,7 +109,7 @@ if (QS == true){        // Quantified Self flag is true when arduino finds a hea
       } else {
          // grab BPM and set SpeedFactor
       // inclusive 
-      SpeedFactor = mapf(BPM, 60, 150, 9, 30); //0.030 - max | 0.008 - min  
+      SpeedFactor = mapf(BPM, 60, 150, 1, 25); //0.030 - max | 0.008 - min  
       //float SpeedFactorMini = SpeedFactor / 1000.0;
       SpeedFactor = constrain(SpeedFactor, 9, 30); // keep within limits
       }
@@ -122,11 +122,11 @@ if (QS == true){        // Quantified Self flag is true when arduino finds a hea
       Serial.println(SpeedFactor);
       //Serial.println(SpeedFactorFloat);
       //Serial.println("this");
-     if( (SpeedFactor >= 9) && (SpeedFactor < 16)  ){
+     if( (SpeedFactor >= 1) && (SpeedFactor < 11)  ){
       stripColor = strip.Color(0, 0, 250);
-     } else if ( (SpeedFactor >= 16) && (SpeedFactor < 23) ){
+     } else if ( (SpeedFactor >= 11) && (SpeedFactor < 18) ){
        stripColor = strip.Color(125, 0, 125);
-     } else if ( (SpeedFactor >= 23) && (SpeedFactor < 30) ){
+     } else if ( (SpeedFactor >= 18) && (SpeedFactor < 25) ){
        stripColor = strip.Color(250, 0, 0);
      } else {
        stripColor = strip.Color(0, 0, 0); 
